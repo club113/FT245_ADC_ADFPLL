@@ -1,0 +1,15 @@
+# Output products list for <FFT7>
+FFT7.asy
+FFT7.gise
+FFT7.ngc
+FFT7.sym
+FFT7.v
+FFT7.veo
+FFT7.xco
+FFT7.xise
+FFT7\doc\xfft_ds260.pdf
+FFT7\doc\xfft_v7_1_readme.txt
+FFT7\doc\xfft_v7_1_vinfo.html
+FFT7_flist.txt
+FFT7_xmdf.tcl
+_xmsgs\pn_parser.xmsgs
