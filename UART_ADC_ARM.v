@@ -21,7 +21,7 @@
 module UART_ADC_ARM
 #(
 parameter  DATA_WIDTH = 10 - 1,//data[9:0]
-  SAMPLING_NUM = 10'd1000
+  SAMPLING_NUM = 10'd1023
 )
 
 (
@@ -200,46 +200,56 @@ begin
 				DARA_R16:
 					begin
 					RamReadDataStore = RamReadData;//16bits 
-					RamReadAddr_next = RamReadAddr_next + 10'd1;
 					UartSendStaus_next = DATA_START;
 					end
 				DATA_START:
-					begin
-					DataTx_next[7:0] = RamReadDataStore[7:0];
-					UartTxEn_next = 1'd1;						
-					UartSendStaus_next = DATA_L8;
+					begin					
+					UartSendStaus_next = DATA_L8_WAIT;
 					end
 					
-				DATA_L8:
-					begin
-					if(TxDone)
-						begin
-						DataTx_next[7:0] = RamReadDataStore[15:8];
-						UartSendStaus_next = DATA_L8_WAIT;
-						end
-					end
 				DATA_L8_WAIT:
 					begin
 						if(!TxValid)
 							begin
+							DataTx_next[7:0] = RamReadDataStore[7:0];
 							UartTxEn_next = 1'd1;
-							UartSendStaus_next = DATA_H8;
+							UartSendStaus_next = DATA_L8;
 							end
-					end
-				DATA_H8:
-					begin
+					end				
 
-						if(TxDone)
-							UartSendStaus_next = DATA_H8_WAIT;
+				
+				DATA_L8:
+					begin
+					if(TxDone)
+						begin
+						UartSendStaus_next = DATA_H8_WAIT;
+						end
 					end
 				DATA_H8_WAIT:
 					begin
 					if(!TxValid)
 						begin
-							UartTxEn_next = 1'd1;
+						DataTx_next[7:0] = RamReadDataStore[15:8];
+						UartTxEn_next = 1'd1;
+						UartSendStaus_next = DATA_H8;
+						end
+					end 	
+				DATA_H8:
+					begin
+
+						if(TxDone)
+							begin
+
 							UartSendStaus_next = DARA_R16;
+							
 							if(RamReadAddr == SAMPLING_NUM)
+								begin
 								ReadRamStatus_next = ENDD_STATUS;
+								end
+							else	
+								begin
+								RamReadAddr_next = RamReadAddr_next + 10'd1;
+								end
 						end
 					end
 				default:
@@ -280,7 +290,10 @@ UserEnADC_next = 1'd0;
 			case(DataRx[3:0])
 			 CMD_START_ADC:
 				begin
-				UserEnADC_next = 1'd1; 
+				if(ReadRamStatus == IDLE_STATUS)
+					begin
+					UserEnADC_next = 1'd1; 
+					end
 				end
 				
 			 //CMD_POLL_STATUS:
