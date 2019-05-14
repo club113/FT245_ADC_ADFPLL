@@ -1,5 +1,5 @@
 #ChipScope Core Inserter Project File Version 3.0
-#Tue May 14 10:36:01 CST 2019
+#Tue May 14 10:55:09 CST 2019
 Project.device.designInputFile=H\:\\ISE\\ISE_PRJ\\008 FT245ADC\\FT245ADC\\Working\\CLOCKING_cs.ngc
 Project.device.designOutputFile=H\:\\ISE\\ISE_PRJ\\008 FT245ADC\\FT245ADC\\Working\\CLOCKING_cs.ngc
 Project.device.deviceFamily=18
@@ -16,17 +16,27 @@ Project.icon.triggerOutPinName=
 Project.unit.dimension=1
 Project.unit<0>.clockChannel=CLK_100MHZ
 Project.unit<0>.clockEdge=Rising
+Project.unit<0>.dataChannel<0>=ReadADCarm/ReadRamStatus_FSM_FFd1-In
+Project.unit<0>.dataChannel<1>=ReadADCarm/ReadRamStatus_FSM_FFd2-In
+Project.unit<0>.dataChannel<2>=ReadADCarm/ReadRamStatus_FSM_FFd3-In
+Project.unit<0>.dataChannel<3>=ReadADCarm/UartSendStaus<0>
+Project.unit<0>.dataChannel<4>=ReadADCarm/UartSendStaus<1>
+Project.unit<0>.dataChannel<5>=ReadADCarm/UartSendStaus<2>
+Project.unit<0>.dataChannel<6>=ReadADCarm/UART1/RD_reg_rstpot
+Project.unit<0>.dataChannel<7>=ReadADCarm/UART1/WR_reg_rstpot
+Project.unit<0>.dataChannel<8>=ReadADCarm/TxValid
+Project.unit<0>.dataChannel<9>=ReadADCarm/TxDone
 Project.unit<0>.dataDepth=1024
 Project.unit<0>.dataEqualsTrigger=true
-Project.unit<0>.dataPortWidth=8
+Project.unit<0>.dataPortWidth=10
 Project.unit<0>.enableGaps=false
 Project.unit<0>.enableStorageQualification=true
 Project.unit<0>.enableTimestamps=false
 Project.unit<0>.timestampDepth=0
 Project.unit<0>.timestampWidth=0
-Project.unit<0>.triggerChannel<0><0>=ReadADCarm/ReadRamStatus_FSM_FFd1-In
-Project.unit<0>.triggerChannel<0><1>=ReadADCarm/ReadRamStatus_FSM_FFd2-In
-Project.unit<0>.triggerChannel<0><2>=ReadADCarm/ReadRamStatus_FSM_FFd3-In
+Project.unit<0>.triggerChannel<0><0>=ReadADCarm/ReadRamStatus<0>
+Project.unit<0>.triggerChannel<0><1>=ReadADCarm/ReadRamStatus<1>
+Project.unit<0>.triggerChannel<0><2>=ReadADCarm/ReadRamStatus<2>
 Project.unit<0>.triggerChannel<0><3>=ReadADCarm/UartSendStaus<0>
 Project.unit<0>.triggerChannel<0><4>=ReadADCarm/UartSendStaus<1>
 Project.unit<0>.triggerChannel<0><5>=ReadADCarm/UartSendStaus<2>

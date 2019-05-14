@@ -129,7 +129,7 @@ FT245RL UART1(
 
 
 //UART CMD parse
-reg [2:0]ReadRamStatus;
+(* KEEP="TRUE"*) reg [2:0]ReadRamStatus;
 reg [2:0]ReadRamStatus_next;
 
 always@(posedge CLK, negedge RST)

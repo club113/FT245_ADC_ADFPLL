@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module FT245RL
 #(
-parameter DELAY_TICKS = 4'd10//5*10ms 
+parameter DELAY_TICKS = 4'd5//20*10ns 
 )
 (
     input CLK,
@@ -115,6 +115,7 @@ begin
 		begin
 
 		DelayFlag_next = 1'b0;
+		DelayStatus_next = DelayStatus;
 			case(DelayStatus)
 			IDLE:
 				begin
@@ -127,15 +128,17 @@ begin
 			CNT:
 				begin
 				
-				if(Couter == DELAY_TICKS)
-					begin
-					Couter = 4'd0;
-					DelayStatus_next = IDLE;
-					
-					DelayFlag_next = 1'b1;	
-					end
-				else
-					Couter = Couter + 4'd1; 
+					if(Couter == DELAY_TICKS)
+						begin
+						Couter = 4'd0;
+						DelayStatus_next = IDLE;
+						
+						DelayFlag_next = 1'b1;	
+						end
+					else
+						begin
+						Couter = Couter + 4'd1;
+						end
 				
 				end
 			endcase
@@ -170,6 +173,7 @@ begin
 			CntEn_next = 1'b1;
 			WR_reg_next = 1'b1;
 			end
+
 		end
 	READ_STATUS:
 		begin
@@ -184,10 +188,15 @@ begin
 		begin
 		
 			if(DelayFlag)
+				begin
 				WR_reg_next = 1'b0;
+				end
 				
 			if(TXE)
+				begin
 			   ReadWriteStatus_next = W_WAIT_STATUS;
+			   end
+				
 		end
 	R_WAIT_STATUS:
 		begin
