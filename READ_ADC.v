@@ -28,14 +28,14 @@ parameter  DATA_WIDTH = 9,//data[9:0]
 (
     input RST,
     input CLK,
-	(* KEEP="TRUE"*)input SART_TURN,
+	input SART_TURN,
 	input [10:0]DIVIDER,//4+1= 5 divider
     input [11:0]ADC_BIT,
     input ADC_OTR,
     output ADC_CLK,
     output ADC_OE,	
-	(* KEEP="TRUE"*)input [DATA_WIDTH :0]RAM_RD_ADDR,// max address = 1023
-	(* KEEP="TRUE"*)output [15:0]RAM_DATA_OUT,//tow byte
+	input [DATA_WIDTH :0]RAM_RD_ADDR,// max address = 1023
+	output [15:0]RAM_DATA_OUT,//tow byte
 	
 	output TURN_DONE //output one clock pulse
     );
@@ -46,15 +46,15 @@ localparam [1:0]
  ENDD  = 2'b10;
 
 
-(* KEEP="TRUE"*)reg [1:0] TurnStatus,TurnStatus_next; // status machine
-(* KEEP="TRUE"*)reg TurnDone_Reg, TurnDone_Reg_next; 
+reg [1:0] TurnStatus,TurnStatus_next; // status machine
+reg TurnDone_Reg, TurnDone_Reg_next; 
 	
 reg ADC_OE_REG;	
 
 
 
-(* KEEP="TRUE"*)reg [DATA_WIDTH :0]ReadCounter;// the counter of reading ADC Value
-(* KEEP="TRUE"*)reg [DATA_WIDTH :0]ReadCounter_next;
+reg [DATA_WIDTH :0]ReadCounter;// the counter of reading ADC Value
+reg [DATA_WIDTH :0]ReadCounter_next;
 reg [15:0]ADC_Value;
 reg RamEnable;
 
@@ -116,7 +116,9 @@ begin
   WriteRead_next = WriteRead;
   
   TurnDone_Reg_next = 1'd0;//only one pulse
-  
+
+  ADC_Value[11:0] = ADC_BIT;// ADC_CLK_FALLING  read ADC should in clock falling edge
+  ADC_Value[15:12] = 0;//ReadCounter[3:0];
    case(TurnStatus)
 	IDLE:
 		begin
@@ -138,11 +140,11 @@ begin
 		begin
 		  ADC_OE_REG = 1'd0;
 		
-		  if(ADC_CLK_FALLING)//store data
-		  begin
-			ADC_Value[11:0] = ADC_BIT;// ADC_CLK_FALLING  read ADC should in clock falling edge
-			ADC_Value[15:12] = 0;//ReadCounter[3:0];
-		  end
+//		  if(ADC_CLK_FALLING)//store data
+//		  begin
+//			ADC_Value[11:0] = ADC_BIT;// ADC_CLK_FALLING  read ADC should in clock falling edge
+//			ADC_Value[15:12] = 0;//ReadCounter[3:0];
+//		  end
 		  
 		  if(ADC_CLK_RSING) //update address
 		  begin

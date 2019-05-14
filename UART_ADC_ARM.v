@@ -97,7 +97,7 @@ reg  [7:0]DataTx,DataTx_next;
 (* KEEP="TRUE"*)  wire TxDone;
 
 //UArt Send Data parameter
-(* KEEP="TRUE"*) reg [15:0]RamReadDataStore;// save the data 16bits
+//(* KEEP="TRUE"*) reg [15:0]RamReadDataStore;// save the data 16bits
 
 (* KEEP="TRUE"*) reg [2:0]UartSendStaus,UartSendStaus_next;// DATA_L8 or DATA_H8
 
@@ -199,7 +199,6 @@ begin
 			
 				DARA_R16:
 					begin
-					RamReadDataStore = RamReadData;//16bits 
 					UartSendStaus_next = DATA_START;
 					end
 				DATA_START:
@@ -211,7 +210,7 @@ begin
 					begin
 						if(!TxValid)
 							begin
-							DataTx_next[7:0] = RamReadDataStore[7:0];
+							DataTx_next[7:0] = RamReadData[7:0];
 							UartTxEn_next = 1'd1;
 							UartSendStaus_next = DATA_L8;
 							end
@@ -229,7 +228,7 @@ begin
 					begin
 					if(!TxValid)
 						begin
-						DataTx_next[7:0] = RamReadDataStore[15:8];
+						DataTx_next[7:0] = RamReadData[15:8];
 						UartTxEn_next = 1'd1;
 						UartSendStaus_next = DATA_H8;
 						end
@@ -280,7 +279,7 @@ CMD_SIMPING_CLK  = 4'd4;
 
 always@*
 begin
-Divider_next = Divider;
+Divider_next = Divider; // F_div = CLK/ 2(n+1):  n= 0  50Mhz, n = 1, 
 
 UserEnADC_next = 1'd0;
 	if(RxDone)
