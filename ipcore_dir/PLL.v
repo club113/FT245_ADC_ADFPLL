@@ -55,7 +55,7 @@
 // "Output    Output      Phase     Duty      Pk-to-Pk        Phase"
 // "Clock    Freq (MHz) (degrees) Cycle (%) Jitter (ps)  Error (ps)"
 //----------------------------------------------------------------------------
-// CLK_OUT1____50.000______0.000______50.0______200.000____150.000
+// CLK_OUT1____80.000______0.000______50.0______450.000____150.000
 //
 //----------------------------------------------------------------------------
 // "Input Clock   Freq (MHz)    Input Jitter (UI)"
@@ -93,11 +93,12 @@ module PLL
   wire [7:0]  status_int;
   wire clkfb;
   wire clk0;
+  wire clkfx;
 
   DCM_SP
   #(.CLKDV_DIVIDE          (2.000),
-    .CLKFX_DIVIDE          (1),
-    .CLKFX_MULTIPLY        (4),
+    .CLKFX_DIVIDE          (5),
+    .CLKFX_MULTIPLY        (8),
     .CLKIN_DIVIDE_BY_2     ("FALSE"),
     .CLKIN_PERIOD          (20.0),
     .CLKOUT_PHASE_SHIFT    ("NONE"),
@@ -116,7 +117,7 @@ module PLL
     .CLK270                (),
     .CLK2X                 (),
     .CLK2X180              (),
-    .CLKFX                 (),
+    .CLKFX                 (clkfx),
     .CLKFX180              (),
     .CLKDV                 (),
     // Ports for dynamic phase shift
@@ -136,11 +137,13 @@ module PLL
 
   // Output buffering
   //-----------------------------------
-  assign clkfb = CLK_OUT1;
+  BUFG clkf_buf
+   (.O (clkfb),
+    .I (clk0));
 
   BUFG clkout1_buf
    (.O   (CLK_OUT1),
-    .I   (clk0));
+    .I   (clkfx));
 
 
 

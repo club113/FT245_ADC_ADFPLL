@@ -291,7 +291,8 @@ UserEnADC_next = 1'd0;
 				begin
 				if(ReadRamStatus == IDLE_STATUS)
 					begin
-					UserEnADC_next = 1'd1; 
+					UserEnADC_next = 1'd1;
+					Divider_next[3:0] = DataRx[7:4];
 					end
 				end
 				
@@ -304,7 +305,7 @@ UserEnADC_next = 1'd0;
 				
 			default:
 			  begin
-			  Divider_next[3:0] =  3;
+			  Divider_next[3:0] =  0;
 			  end
 			endcase 
 		end
