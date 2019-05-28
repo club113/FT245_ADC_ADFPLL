@@ -50,10 +50,10 @@
 ADC_RAM your_instance_name (
   .clka(clka), // input clka
   .wea(wea), // input [0 : 0] wea
-  .addra(addra), // input [9 : 0] addra
+  .addra(addra), // input [10 : 0] addra
   .dina(dina), // input [15 : 0] dina
   .clkb(clkb), // input clkb
-  .addrb(addrb), // input [9 : 0] addrb
+  .addrb(addrb), // input [10 : 0] addrb
   .doutb(doutb) // output [15 : 0] doutb
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------

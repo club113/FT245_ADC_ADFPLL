@@ -20,8 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 module UART_ADC_ARM
 #(
-parameter  DATA_WIDTH = 10 - 1,//data[9:0]
-  SAMPLING_NUM = 10'd1023
+parameter  DATA_WIDTH = 11 - 1,//data[10:0]
+  SAMPLING_NUM = 11'd2047,
+  ADDRESS_INIT_VALUE = 11'd0,
+  ADDRESS_ONE = 11'd1 
 )
 
 (
@@ -54,7 +56,7 @@ PLL instance_name
 reg[10:0] Divider,Divider_next;
 (* KEEP="TRUE"*)reg   StartTurn,StartTurn_next;
 (* KEEP="TRUE"*) reg  [DATA_WIDTH:0]RamReadAddr, RamReadAddr_next;
-wire [15:0]RamReadData;
+wire [31:0]RamReadData;
 (* KEEP="TRUE"*) wire  TurnDone;// it could output one clock time pulse, to trigger reading event
 READ_ADC  ReadADCValue(
     .RST(RST),
@@ -81,13 +83,17 @@ WAIT_STATUS = 3'd2, //wait read numbers of value data
 READ_STATUS = 3'd3,
 ENDD_STATUS = 3'd4;
 
-localparam  [2:0]
-DARA_R16 = 3'd0,
-DATA_START = 3'd1,
-DATA_L8 = 3'd2,   //  UART send  bit[0:7]
-DATA_L8_WAIT = 3'd3, 
-DATA_H8 = 3'd4,   //  UART send  bit[8:15]
-DATA_H8_WAIT = 3'd5;
+localparam  [3:0]
+DARA_R16 = 4'd0,
+DATA_START = 4'd1,
+DATA_L8 = 4'd2,   //  UART send  bit[0:7]
+DATA_L8_WAIT = 4'd3, 
+DATA_H8 = 4'd4,   //  UART send  bit[8:15]
+DATA_H8_WAIT = 4'd5,
+DATA_HL8 = 4'd6,
+DATA_HL8_WAIT = 4'd7,
+DATA_HH8 = 4'd8,
+DATA_HH8_WAIT= 4'd9;
 //UART signal
 wire BaudTick_Rx,BaudTickTx;
 wire [7:0]DataRx;
@@ -99,7 +105,7 @@ reg  [7:0]DataTx,DataTx_next;
 //UArt Send Data parameter
 //(* KEEP="TRUE"*) reg [15:0]RamReadDataStore;// save the data 16bits
 
-(* KEEP="TRUE"*) reg [2:0]UartSendStaus,UartSendStaus_next;// DATA_L8 or DATA_H8
+(* KEEP="TRUE"*) reg [3:0]UartSendStaus,UartSendStaus_next;// DATA_L8 or DATA_H8
 
 //UART CMD parse parameter
 //reg [7:0] UartRxDataStore;
@@ -140,7 +146,7 @@ begin
 			UartTxEn <= 0;
 			UartSendStaus <= IDLE_STATUS;
 			UserEnADC <= 1'd0;
-			RamReadAddr<= 10'd0;
+			RamReadAddr<= ADDRESS_INIT_VALUE;
 			
 			Divider <= 3;
 			DataTx  <= 8'd0;
@@ -189,7 +195,7 @@ begin
 		if(TurnDone) //wait ADC turning completed
 			begin
 			ReadRamStatus_next = READ_STATUS;
-			RamReadAddr_next = 10'd0;
+			RamReadAddr_next = ADDRESS_INIT_VALUE;
 			UartSendStaus_next = DARA_R16; // read 16bits data
 			end
 		end
@@ -238,6 +244,39 @@ begin
 
 						if(TxDone)
 							begin
+							UartSendStaus_next = DATA_HL8_WAIT;								
+							end
+					end
+				DATA_HL8_WAIT:
+					begin
+							if(!TxValid)
+							begin
+							DataTx_next[7:0] = RamReadData[23:16];
+							UartTxEn_next = 1'd1;
+							UartSendStaus_next = DATA_HL8;
+							end
+					end
+				DATA_HL8:
+					begin
+							if(TxDone)
+							begin
+							UartSendStaus_next = DATA_HH8_WAIT;								
+							end
+					end
+				DATA_HH8_WAIT:
+					begin
+						if(!TxValid)
+							begin
+							DataTx_next[7:0] = RamReadData[31:24];
+							UartTxEn_next = 1'd1;
+							UartSendStaus_next = DATA_HH8;
+							end
+					
+					end
+				DATA_HH8:					
+					begin
+						if(TxDone)
+							begin
 
 							UartSendStaus_next = DARA_R16;
 							
@@ -247,9 +286,10 @@ begin
 								end
 							else	
 								begin
-								RamReadAddr_next = RamReadAddr_next + 10'd1;
+								RamReadAddr_next = RamReadAddr_next + ADDRESS_ONE;
 								end
 						end
+					
 					end
 				default:
 					begin

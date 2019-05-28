@@ -21,8 +21,10 @@
 module READ_ADC
 
 #(
-parameter  DATA_WIDTH = 9,//data[9:0]
-  SAMPLING_NUM = 10'd1023
+parameter  DATA_WIDTH = 10,//data[10:0]
+  SAMPLING_NUM = 11'd2047,
+  ADDRESS_INIT_VALUE = 11'd0,
+  ADDRESS_ONE = 11'd1 
 )
 
 (
@@ -35,7 +37,7 @@ parameter  DATA_WIDTH = 9,//data[9:0]
     output ADC_CLK,
     output ADC_OE,	
 	input [DATA_WIDTH :0]RAM_RD_ADDR,// max address = 1023
-	output [15:0]RAM_DATA_OUT,//tow byte
+	output [31:0]RAM_DATA_OUT,//tow byte
 	
 	output TURN_DONE //output one clock pulse
     );
@@ -52,7 +54,7 @@ reg TurnDone_Reg, TurnDone_Reg_next;
 reg ADC_OE_REG;	
 
 
-
+wire [15:0]SinCosCounter;// for  local frequency counter
 reg [DATA_WIDTH :0]ReadCounter;// the counter of reading ADC Value
 reg [DATA_WIDTH :0]ReadCounter_next;
 reg [15:0]ADC_Value;
@@ -71,7 +73,7 @@ Divider READ_CLK( .RST(RST),
 				  .RISING_EDGE(ADC_CLK_RSING),
 				  .FALLING_EDGE(ADC_CLK_FALLING)
 				  );
-ADC_RAM uut (		
+ADC_RAM Fi (		
 		.clka(CLK), // input 
 		.wea(WriteRead), // input [0 : 0]
 		.addra(ReadCounter), // input [9 : 0] 
@@ -79,11 +81,29 @@ ADC_RAM uut (
 		.dina(ADC_Value), // input [15 : 0] 
 		.clkb(CLK), // input 
 		.addrb(RAM_RD_ADDR), // input [9 : 0] 
-		.doutb(RAM_DATA_OUT) // output [15 : 0] 
+		.doutb(RAM_DATA_OUT[15:0]) // output [15 : 0] 
+		
+	);
+ADC_RAM Lo(		
+		.clka(CLK), // input 
+		.wea(WriteRead), // input [0 : 0]
+		.addra(ReadCounter), // input [9 : 0] 
+
+		.dina(SinCosCounter), // input [15 : 0] 
+		.clkb(CLK), // input 
+		.addrb(RAM_RD_ADDR), // input [9 : 0] 
+		.doutb(RAM_DATA_OUT[31:16]) // output [15 : 0] 
 		
 	);
 	
+	
 
+COUNTER LO_CONTER(
+.CLK(CLK),
+.RST(RST),
+.SIN_COUNTER(SinCosCounter[7:0]),
+.COS_COUNTER(SinCosCounter[15:8])
+);
 always@(posedge CLK, negedge RST)
 begin
 	if(!RST)
@@ -91,7 +111,7 @@ begin
 //		DiverReg <= 11'd0;
 		RamEnable <=  1'd1;
 		WriteRead <=  1'd1;
-		ReadCounter <= 10'd0;
+		ReadCounter <= ADDRESS_INIT_VALUE;
 		TurnStatus	<= IDLE;
 		end
 	else
@@ -155,7 +175,7 @@ begin
 				end
 			  else
 				begin
-				ReadCounter_next  = ReadCounter_next + 10'd1;
+				ReadCounter_next  = ReadCounter_next + ADDRESS_ONE;
 				end
 		   end
 		end
@@ -166,7 +186,7 @@ begin
 			TurnStatus_next = IDLE;
 			WriteRead_next = 1'd0;//read
 			ADC_OE_REG = 1'd1; //disable read ADC
-		    ReadCounter_next =  10'd0;
+		    ReadCounter_next =  ADDRESS_INIT_VALUE;
 		end
 		
 	default:
