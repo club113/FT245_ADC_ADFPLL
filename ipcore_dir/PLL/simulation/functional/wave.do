@@ -51,10 +51,10 @@ add wave -noupdate -format Literal -radix ascii /PLL_tb/test_phase
 add wave -noupdate -divider {Input clocks}
 add wave -noupdate -format Logic /PLL_tb/CLK_IN1
 add wave -noupdate -divider {Output clocks}
-add wave -noupdate -format Logic /PLL_tb/dut/clk
+add wave -noupdate -format Literal -expand /PLL_tb/dut/clk
 add wave -noupdate -divider Status/control
 add wave -noupdate -format Logic /PLL_tb/RESET
 add wave -noupdate -format Logic /PLL_tb/LOCKED
 add wave -noupdate -divider Counters
 add wave -noupdate -format Literal -radix hexadecimal /PLL_tb/COUNT
-add wave -noupdate -format Literal -radix hexadecimal /PLL_tb/dut/counter
+add wave -noupdate -format Literal -radix hexadecimal -expand /PLL_tb/dut/counter

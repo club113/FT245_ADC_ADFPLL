@@ -332,7 +332,7 @@ UserEnADC_next = 1'd0;
 				if(ReadRamStatus == IDLE_STATUS)
 					begin
 					UserEnADC_next = 1'd1;
-					Divider_next[3:0] = DataRx[7:4];
+					//Divider_next[3:0] = DataRx[7:4];
 					end
 				end
 				

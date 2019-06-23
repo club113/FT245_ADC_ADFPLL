@@ -20,12 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 module COUNTER
 #(
-parameter THRESHOLD = 8'd79,
-QUADRATURE_START = 8'd20 // 1/4
+parameter THRESHOLD = 8'd39,
+QUADRATURE_START = 8'd10 // 1/4
 )
 (
     input RST,
     input CLK,
+	output PHASE_START, //if sin = 0, output a pulse
     output [7:0] SIN_COUNTER,
 	output [7:0] COS_COUNTER
     );
