@@ -21,6 +21,8 @@
 module ADF_APP(
     input CLK,
     input RST,
+	input CFG_EN,     //Config enable       
+	input [23:0]FREQ, //target frequency  unit = KHz
     output D_CLK,
     output D_OUT,
     output D_LE,
@@ -34,11 +36,15 @@ module ADF_APP(
 	output [5:0]SW_V,
 	
 	output RF_SW_EN,
-	output RF_SW_CTL
+	output RF_SW_CTL,
+	
+	output CFG_DONE  //if done is high, the ADF4351 has  been set
     );
 	
 wire CLK_40MZH;
+wire FREQ_CAL_DONE;  //calculate done
 reg [5:0]SW_V_reg;
+reg CfgDoneReg,CfgDoneRegNext;
 
 reg RF_SW_EN_reg;
 reg RF_SW_CTL_reg;
@@ -48,6 +54,11 @@ wire ADF_RF_Done,ADF_LO_Done;
 reg ADF_RF_WriteEn,ADF_RF_WriteEn_next; //RF write register enable
 reg [31:0]ADF_RF_Data,ADF_RF_DataNext;
 reg [31:0]ADF_LO_Data,ADF_LO_DataNext;
+
+wire [31:0]ADF_LO_R0;
+wire [31:0]ADF_RF_R0;
+wire [31:0]ADF_LO_R4;
+wire [31:0]ADF_RF_R4;
 
 localparam [31:0]
 LO_ADF_REG0 = 32'H00501f40, //1002MHZ
@@ -93,6 +104,29 @@ CFG_DONE = 3'd7;
 	 .ADF_WRITE_DONE(LO_ADF_RF_Done)
     );
 	
+	
+ ADF4351_FREQ RF_FREQ_CAL(
+     .RST(RST),
+     .CLK(CLK),
+	 .CFG_EN(CFG_EN),     //Config enable
+     .LO_SET(0),     //LO_SET is high 
+	 .FREQ(FREQ), //target frequency  unit = KHz
+	 .ADF_R0(ADF_RF_R0),
+	 .ADF_R4(ADF_RF_R4),
+	 .DONE(FREQ_CAL_DONE)
+    );
+ ADF4351_FREQ LO_FREQ_CAL(
+     .RST(RST),
+     .CLK(CLK),
+	 .CFG_EN(CFG_EN),     //Config enable
+     .LO_SET(1),     //LO_SET is high 
+	 .FREQ(FREQ), //target frequency  unit = KHz
+	 .ADF_R0(ADF_LO_R0),
+	 .ADF_R4(ADF_LO_R4),
+	 .DONE(DONE)
+    );	
+	
+	
 always@( negedge RST,posedge CLK)
 begin
 
@@ -111,6 +145,8 @@ begin
 		
 		RF_SW_EN_reg <= 0;
 		RF_SW_CTL_reg <= 0;
+		
+		CfgDoneReg <= 0;
 		end
 	else
 		begin
@@ -119,12 +155,15 @@ begin
 		
 		ADF_RF_CFG_Status <= ADF_RF_CFG_StatusNext;
 		ADF_RF_WriteEn <= ADF_RF_WriteEn_next;
-		REF_CLK_reg <= ~REF_CLK_reg;
+		
+		REF_CLK_reg <= ~REF_CLK_reg; //ADF reference clock
 		
 		SW_V_reg <= 6'b000001;
 		
 		RF_SW_EN_reg <= 0;
 		RF_SW_CTL_reg <= 0;
+		
+		CfgDoneReg <= CfgDoneRegNext;
 		end
 	
 end
@@ -133,21 +172,26 @@ assign SW_V = SW_V_reg;
 assign LO_REF_CLK = REF_CLK_reg;
 assign RF_SW_EN = RF_SW_EN_reg;
 assign RF_SW_CTL = RF_SW_CTL_reg;
+assign CFG_DONE = CfgDoneReg; 
 
 always@*
 begin
 ADF_RF_CFG_StatusNext = ADF_RF_CFG_Status;
 ADF_RF_WriteEn_next = 0;
+CfgDoneRegNext = 0; // out put flag,ad4351 sot completely
 ADF_RF_DataNext = ADF_RF_Data;
 ADF_LO_DataNext = ADF_LO_Data;
 	case(ADF_RF_CFG_Status)
 	
 		CFG_IDLE:
 			begin
-			ADF_RF_CFG_StatusNext = CFG_REG5;
-			ADF_RF_DataNext = ADF_REG5;
-			ADF_LO_DataNext = ADF_REG5;
-			ADF_RF_WriteEn_next = 1;   // enable Write SPI
+				if(FREQ_CAL_DONE)
+				begin
+					ADF_RF_CFG_StatusNext = CFG_REG5;
+					ADF_RF_DataNext = ADF_REG5;
+					ADF_LO_DataNext = ADF_REG5;
+					ADF_RF_WriteEn_next = 1;   // enable Write SPI
+				end
 			end
 		CFG_REG5:
 			begin
@@ -155,8 +199,10 @@ ADF_LO_DataNext = ADF_LO_Data;
 				if(ADF_RF_Done)//wait reg5 written over
 				begin
 				ADF_RF_CFG_StatusNext = CFG_REG4;
-				ADF_RF_DataNext = ADF_REG4;
-				ADF_LO_DataNext = ADF_REG4;
+				
+				ADF_RF_DataNext = ADF_RF_R4; // update setting value
+				ADF_LO_DataNext = ADF_LO_R4;
+				
 				ADF_RF_WriteEn_next = 1;    
 				end
 			end
@@ -195,8 +241,8 @@ ADF_LO_DataNext = ADF_LO_Data;
 				if(ADF_RF_Done)
 				begin
 				ADF_RF_CFG_StatusNext = CFG_REG0;
-				ADF_RF_DataNext = ADF_REG0;
-				ADF_LO_DataNext = LO_ADF_REG0;
+				ADF_RF_DataNext = ADF_RF_R0;
+				ADF_LO_DataNext = ADF_LO_R0;
 				ADF_RF_WriteEn_next = 1;
 				end
 			end
@@ -211,7 +257,8 @@ ADF_LO_DataNext = ADF_LO_Data;
 			
 		CFG_DONE:
 			begin
-			ADF_RF_CFG_StatusNext = CFG_DONE;
+			ADF_RF_CFG_StatusNext = CFG_IDLE;
+			CfgDoneRegNext = 1;
 			end
 	endcase
 
