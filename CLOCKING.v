@@ -63,7 +63,7 @@ PLL  CLK_Generator (
     .CLK_IN1(CLK),      // IN
     // Clock out ports
     .CLK_OUT1(CLK_80MHZ),   // OUT 100Mhz\
-	.CLK_OUT2(CLK_OUT2),     // OUT
+	.CLK_OUT2(CLK_50MHZ),     // OUT
     // Status and control signals
     .RESET(RST_P)// IN
 	
