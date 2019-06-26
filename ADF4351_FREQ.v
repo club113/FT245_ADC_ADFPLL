@@ -90,7 +90,7 @@ Done_regNext = 0;
 		FreqCalStatus_next = CAL_STATUS_R0_STEP_0;
 		if(LO_SET)
 			begin
-			FreqRegNext = FREQ - 20; // IF = 2MHZ 
+			FreqRegNext = FREQ - 2000; // IF = 2MHZ 
 			end
 		else
 			begin

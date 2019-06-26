@@ -63,7 +63,7 @@ PLL  CLK_Generator (
     .CLK_IN1(CLK),      // IN
     // Clock out ports
     .CLK_OUT1(CLK_80MHZ),   // OUT 100Mhz\
-	.CLK_OUT2(CLK_50MHZ),     // OUT
+	//.CLK_OUT2(CLK_50MHZ),     // OUT
     // Status and control signals
     .RESET(RST_P)// IN
 	
@@ -85,29 +85,26 @@ UART_ADC_ARM ReadADCarm(
 		.RXF(RXF),
 		.WR(WR),
 		.RD(RD),			
-		.DATA_IO(DATA_IO)
+		.DATA_IO(DATA_IO),
+		
+			//ADF4350 PLL interface as  follow
+		.D_CLK(D_CLK),
+		.D_OUT(D_OUT),
+		.D_LE(D_LE),
+		.REF_CLK(REF_CLK),
+	
+		.LO_D_CLK(LO_D_CLK),
+		.LO_D_OUT(LO_D_OUT),
+		.LO_D_LE(LO_D_LE),
+		.LO_REF_CLK(LO_REF_CLK),
+	
+		.SW_V(SW_V),
+	
+		.RF_SW_EN(RF_SW_EN),
+		.RF_SW_CTL(RF_SW_CTL)
     );
 	
-ADF_APP(
 
-    .CLK(CLK_50MHZ),
-    .RST(RST),
-    .D_CLK(D_CLK),
-    .D_OUT(D_OUT),
-    .D_LE(D_LE),
-    .REF_CLK(REF_CLK),
-	
-	.LO_D_CLK(LO_D_CLK),
-    .LO_D_OUT(LO_D_OUT),
-    .LO_D_LE(LO_D_LE),
-    .LO_REF_CLK(LO_REF_CLK),
-	
-	.SW_V(SW_V),
-	
-	.RF_SW_EN(RF_SW_EN),
-	.RF_SW_CTL(RF_SW_CTL)
-
-);
 
 	
 always@*

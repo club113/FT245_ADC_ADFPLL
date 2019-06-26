@@ -38,7 +38,7 @@ module ADF_APP(
 	output RF_SW_EN,
 	output RF_SW_CTL,
 	
-	output CFG_DONE  //if done is high, the ADF4351 has  been set
+	output CFG_DONE_FLAG  //if done is high, the ADF4351 has  been set
     );
 	
 wire CLK_40MZH;
@@ -172,7 +172,7 @@ assign SW_V = SW_V_reg;
 assign LO_REF_CLK = REF_CLK_reg;
 assign RF_SW_EN = RF_SW_EN_reg;
 assign RF_SW_CTL = RF_SW_CTL_reg;
-assign CFG_DONE = CfgDoneReg; 
+assign CFG_DONE_FLAG = CfgDoneReg; 
 
 always@*
 begin
